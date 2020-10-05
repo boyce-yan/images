@@ -1,9 +1,10 @@
 <template>
 <el-card header="上传图片" shadow="never" style="max-width: 1250px;margin: 20px auto;">
     <ele-form :form-data="formData" :form-desc="formDesc" :request-fn="handleRequest" @request-success="handleSuccess" />
-    <el-card class="box-card">
+    <el-card class="box-card" v-show="show">
         <div v-for="o in 1" :key="o" class="text item">
-            URL : <el-link type="primary">{{url}}</el-link>
+            URL : <el-link type="primary">{{url}}</el-link> &nbsp;&nbsp;
+            <el-button type="primary" plain @click="copy()">复制</el-button>
         </div>
     </el-card>
 
@@ -12,38 +13,55 @@
 
 <script>
 export default {
-    name: 'App',
-    data() {
-        return {
-            url: '',
-            formData: {},
-            formDesc: {
-                covers: {
-                    label: '封面',
-                    type: 'image-uploader',
-                    attrs: {
-                        drag: true, // 多张
-                        action: 'http://api.yanxiaolong.cn/qiniu/uploadImg',
-                        responseFn(response, file) {
-                            return 'http://image.yanxiaolong.cn/' + response.data
-
-                        }
-                    }
-                }
+  name: 'App',
+  data () {
+    return {
+      show: false,
+      url: '',
+      formData: {},
+      formDesc: {
+        covers: {
+          label: '封面',
+          type: 'image-uploader',
+          attrs: {
+            drag: true, // 多张
+            action: 'http://api.yanxiaolong.cn/qiniu/uploadImg',
+            responseFn (response, file) {
+              return 'http://image.yanxiaolong.cn/' + response.data
             }
+          }
         }
+      }
+    }
+  },
+  methods: {
+    handleRequest (data) {
+      console.log(data)
+      this.url = data.covers
+      if (data.covers != null) {
+        this.show = true
+      }
+
+      return Promise.resolve()
     },
-    methods: {
-        handleRequest(data) {
-            console.log(data)
-            this.url = data.covers
-            return Promise.resolve()
-        },
-        handleSuccess(response) {
-            this.$message.success('提交成功')
-        }
+    handleSuccess (data) {
+      this.$message.success('提交成功')
     },
-    mounted() {}
+    copy () {
+      let oInput = document.createElement('input')
+      oInput.value = this.url
+      document.body.appendChild(oInput)
+      oInput.select() // 选择对象;
+
+      document.execCommand('Copy') // 执行浏览器复制命令
+      this.$message({
+        message: '复制成功',
+        type: 'success'
+      })
+      oInput.remove()
+    }
+  },
+  mounted () {}
 }
 </script>
 
